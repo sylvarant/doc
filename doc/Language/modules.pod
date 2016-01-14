@@ -255,16 +255,22 @@ to C<use>, the C<EXPORT> sub handles positional parameters. If you
 pass positional parameters to C<use> they will be passed to
 C<EXPORT>. If a positional is passed the module no longer exports
 default symbols. You may still import them explicitly by
-passing C<:DEFAULT> to C<use> along with your positional parameters.
+passing C<:DEFAULT> to C<use> along with your positional parameters. Type captures are supported and operators can be exported via their long name.
 
     =begin code
     # lib/MyModule
 
     class MyModule::Class {}
 
-    sub EXPORT($short_name?) {
+    sub EXPORT($short_name?, ::T) {
+        role R[::TT] { }
+        class C { }
+        multi sub infix:<~>(C \l, T \r){ note "supressed concat with: ", T.WHAT; };
+        multi sub infix:<~>(T \l, C \r){ note "supressed concat with: ", T.WHAT; };
         {
-          do $short_name => MyModule::Class if $short_name
+            do $short_name => MyModule::Class if $short_name,
+            'MixedC' => C but R.^parameterize(T), # workaround for RT#127256
+            'infix:<~>' => &infix:<~>
         }
     }
 
@@ -310,6 +316,9 @@ To share your module, do the following:
         |-- lib
         |   `-- Vortex
         |       `-- TotalPerspective.pm
+        |-- doc
+        |   `-- Vortex
+        |       `-- TotalPerspective.pod6
         |-- LICENSE
         |-- META.info
         |-- README.md
@@ -327,7 +336,7 @@ To share your module, do the following:
                 `-- Gargravarr.pm
     =end item
 
-    =item If you have any additional files (such as templates or a dynamic library ) that you wish to have installed so you can access them at runtime they should be placed in a C<resources> sub-directory of your project.  
+    =item If you have any additional files (such as templates or a dynamic library ) that you wish to have installed so you can access them at runtime they should be placed in a C<resources> sub-directory of your project.
 
     =item The C<README.md> file is a L<markdown-formatted|https://help.github.com/articles/markdown-basics/> text file, which
     will later be automatically rendered as HTML by GitHub.
@@ -384,14 +393,14 @@ To share your module, do the following:
 
 	The C<authors> section includes a list of all the module authors. In
 	the case there is only one author, a single element list must be
-	supplied. 
+	supplied.
 
     In the C<provides> section, include all the namespaces provided by
     your distribution and set C<perl> version to the minimum perl version
     your module works with
 
     The C<resources> section is optional, but, if present, should contain a
-    list of the files in your C<resources> directory that you wish to be 
+    list of the files in your C<resources> directory that you wish to be
     installed, these will be installed with hashed names alongside your
     library files and their installed location can be determined through the
     C<%?RESOURCES> Hash indexed on the name provided.

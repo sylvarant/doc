@@ -144,6 +144,11 @@ Nativecall etc.) rather like the linux kernel itself.
 Rakudo Star is a distribution of rakudo which ships with some useful modules
 and many more can be installed from the ecosystem.
 
+=head2 Is there something like B::Deparse/how can I get hold of the AST?
+
+Use C<perl6 --target=ast -e 'very-short-example()'> to get hold of the AST of a
+compilation unit.
+
 =head1 Language Features
 
 =head2 How can I dump Perl 6 data structures (like Perl 5 Data::Dumper and similar)?
@@ -281,7 +286,7 @@ If you want to do it anyway, you can abuse autothreading for that:
 
 =head2 If Str is immutable, how does C<s///> work? if Int is immutable, how does C<$i++> work?
 
-In Perl 6, many basic types are immutable, but the variables holding them are
+In Perl 6, values of many basic types are immutable, but the variables holding them are
 not. The C<s///> operator works on a variable, into which it puts a newly
 created string object. Likewise C<$i++> works on the C<$i> variable, not
 just on the value in it.
@@ -559,7 +564,7 @@ them offer all.
 
 =item System administration simplified due to simpler update/upgrade policies.
 
-=item Floating point math without precision loss because of Rats (rational numbers).
+=item Simple numeric computation without precision loss because of Rats (rational numbers).
 
 =item Extensible grammars for parsing data or code (which Perl 6 uses to parse itself).
 
