@@ -40,7 +40,7 @@ sub module-names(Str $modulename) {
 }
 
 sub locate-module(Str $modulename) {
-    my @candidates = (search-paths() X~ module-names($modulename).list);
+    my @candidates = (search-paths() X~ </ Type/ Language/> X~ module-names($modulename).list);
     DEBUG and warn :@candidates.perl;
     my $m = @candidates.first: *.IO.f;
     unless $m.defined {
@@ -55,8 +55,6 @@ sub locate-module(Str $modulename) {
 sub show-docs(Str $path, :$section, :$no-pager) {
     my $pager;
     $pager = %*ENV<PAGER> // ($*DISTRO.is-win ?? 'more' !! 'less') unless $no-pager;
-    my $which-fmt = qq:x{which fmt}.chomp;
-    my $fmt-string = $which-fmt.IO.e ?? "| $which-fmt -w 80 " !! "";
     if not open($path).lines.grep( /^'=' | '#|' | '#='/ )  {
         say "No Pod found in $path";
         return;
@@ -69,7 +67,7 @@ sub show-docs(Str $path, :$section, :$no-pager) {
     } else {
         $doc-command-str ~= " --doc"
     }
-    $doc-command-str ~= " $path $fmt-string";
+    $doc-command-str ~= " $path ";
     $doc-command-str ~= " | $pager" if $pager;
     say "launching '$doc-command-str'" if DEBUG;
     shell $doc-command-str;
@@ -79,14 +77,18 @@ multi sub MAIN() {
     my $me = $PROGRAM-NAME;
 
     say 'What documentation do you want to read?';
-    say "Examples: $me Type::Str";
-    say "          $me Type::Str.split";
+    say "Examples: $me Str";
+    say "          $me Str.split";
+    say "          $me faq";
+
+    say "\nYou can list some top level documents:";
+    say "          $me -l";
 
     say "\nYou can also look up specific method/routine definitions:";
     say "          $me -f push";
 
     say "\nYou can bypass the pager and print straight to stdout:";
-    say "          $me -n Type::Str"
+    say "          $me -n Str"
 }
 
 multi sub MAIN($docee, Bool :$n) {
@@ -99,6 +101,15 @@ multi sub MAIN($docee, Bool :$n) {
         }
     }
     show-docs(locate-module($docee), :no-pager($n));
+}
+
+multi sub MAIN(Bool :$l!) {
+    my @paths = search-paths() X~ <Type/ Language/> ;
+    for @paths -> $dir {
+        for dir($dir).sort -> $file {
+            say $file.basename.Str.subst('.pod','') if $file.f;
+        }
+    }
 }
 
 multi sub MAIN($docee, Bool :$f!, Bool :$n) {
