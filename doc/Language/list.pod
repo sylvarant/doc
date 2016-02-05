@@ -51,6 +51,17 @@ value must support the L<Positional|/type/Positional> role which guarantees this
 
     my @a := 1; # Type check failed in binding; expected Positional but got Int
 
+=head1 Reset a List Container
+
+To remove all elements from a Positional container assign
+L<C<Empty>|/type/Slip#Empty>, the empty list C<()> or a C<Slip> of the empty
+list to the container.
+
+    my @a = 1,2,3;
+    @a = ();
+    @a = Empty;
+    @a = |();
+
 =head1 Iteration
 
 All lists may be iterated, which means taking each element from the
@@ -236,6 +247,20 @@ is kept intact, causing a nested slice operation that replicates the
 structure in the result:
 
     say ("a","b","c")[(1,2),(0,1)] eqv (("b", "c"), ("a", "b")) # says True
+
+=head2 Range as Slice
+
+A L<C<Range>|/type/Range> is a container for a lower and a upper boundary.
+Generating a slice with a C<Range> will include any index between those bounds,
+including the bounds. For infinite upper bounderies we agree with
+mathematicians that C<Inf> equals C<Inf-1>.
+
+    my @a = 1..5;
+    say @a[0..2]; # OUTPUT«(1 2 3)␤»
+    say @a[0..^2]; # OUTPUT«(1 2)␤»
+    say @a[0..*];  # OUTPUT«(1 2 3 4 5)␤␤»
+    say @a[0..^*]; # OUTPUT«(1 2 3 4 5)␤» 
+    say @a[0..Inf-1]; # OUTPUT«(1 2 3 4 5)␤»
 
 =head2 Array Constructor Context
 
